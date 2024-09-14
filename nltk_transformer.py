@@ -36,7 +36,7 @@ SEED = 42
 
 LABELS = ['middle-of-token', 'end-of-token']
 
-MAX_SEQ_LEN = 256 # this includes the EOS token
+MAX_SEQ_LEN = 128 # this includes the EOS token
 
 def nltk_tokenize(text):
     """
@@ -116,6 +116,16 @@ def chunk_text_to_seq_len(examples, seq_len):
         
         for i in range(0, len(textbook), seq_len - 1):
             results.append(textbook[i:i + seq_len])
+
+    # I'm going to try something different here (it's pretty wasteful computationally but w/e); I'm going to generate a random string with any alphanumeric or ascii symbol
+    # num_results = len(results)
+    # results = []
+
+    # for i in range(num_results):
+    #     # generate a random length for the random string b/w 10 and seq_len - 1 (inclusive)
+    #     rand_len = np.random.randint(10, seq_len)
+    #     # generate a random string of that length
+    #     results.append(''.join(np.random.choice(list(' \n\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{};:\'",.<>?/\\|`~'), size=rand_len)))
 
     examples['text'] = results
 
@@ -291,8 +301,8 @@ if __name__ == '__main__':
 
     ### MODEL CREATION ###
 
-    model = create_bert_model(num_hidden_layers=4, hidden_size=96, num_attention_heads=12, intermediate_size=192)
-    #model = create_bert_model(num_hidden_layers=4, hidden_size=32, num_attention_heads=4, intermediate_size=32, class_weights=class_weights)
+    #model = create_bert_model(num_hidden_layers=4, hidden_size=96, num_attention_heads=12, intermediate_size=192)
+    model = create_bert_model(num_hidden_layers=4, hidden_size=32, num_attention_heads=4, intermediate_size=32, class_weights=class_weights)
 
     print(model.num_labels)
     
@@ -314,9 +324,9 @@ if __name__ == '__main__':
         bf16=True,
         lr_scheduler_type='cosine',
         dataloader_num_workers=8,
+        warmup_steps=2000,
     )
 
-    from AdEMAMix import AdEMAMix
 
     # optimizer = AdEMAMix(model.parameters(), lr=training_args.learning_rate)
     # scheduler = transformers.get_cosine_schedule_with_warmup(
